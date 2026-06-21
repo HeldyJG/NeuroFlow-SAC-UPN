@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NeuroFlow - Plataforma para padres de niños con TDAH. Herramientas de organización, recursos educativos, seguimiento académico y apoyo emocional.">
+  <meta name="keywords" content="TDAH, niños, padres, organización, educación, recursos, relajación, especialistas">
+  <meta name="author" content="NeuroFlow">
+  <meta name="theme-color" content="#4CAF50">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="NeuroFlow - Apoyo para familias con TDAH">
+  <meta property="og:description" content="Herramientas digitales para padres de niños con TDAH. Organización, recursos y apoyo emocional.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/images/og-image.png">
+
+  <title>NeuroFlow - Apoyo para familias con TDAH</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='16' fill='%234CAF50' opacity='0.2'/%3E%3Ccircle cx='18' cy='18' r='12' fill='%234CAF50' opacity='0.4'/%3E%3Ccircle cx='18' cy='18' r='8' fill='%234CAF50'/%3E%3Cpath d='M18 10v16M10 18h16' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <!-- Scripts (defer for performance) -->
+  <script src="assets/js/storage.js" defer></script>
+  <script src="assets/js/utils.js" defer></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/components/toast.js" defer></script>
+  <script src="assets/js/components/modal.js" defer></script>
+  <script src="assets/js/components/timer.js" defer></script>
+  <script src="assets/js/components/navbar.js" defer></script>
+  <script src="assets/js/pages/inicio.js" defer></script>
+  <script src="assets/js/pages/calendario.js" defer></script>
+  <script src="assets/js/pages/recordatorios.js" defer></script>
+  <script src="assets/js/pages/tecnicas.js" defer></script>
+  <script src="assets/js/pages/recursos.js" defer></script>
+  <script src="assets/js/pages/relajacion.js" defer></script>
+  <script src="assets/js/pages/especialistas.js" defer></script>
+  <script src="assets/js/pages/metas.js" defer></script>
+  <script src="assets/js/pages/tienda.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+
+</head>
+<body>
+
+  <!-- FOUC Prevention: ocultar hasta que App.init() renderice el contenido -->
+  <style>
+    html:not(.app-ready) { opacity: 0; }
+    html.app-ready { opacity: 1; transition: opacity 0.15s ease; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        document.documentElement.classList.add('app-ready');
+      }, 50);
+    });
+    setTimeout(function() {
+      document.documentElement.classList.add('app-ready');
+    }, 5000);
+  </script>
+
+  <!-- App root -->
+  <div id="app"></div>
+
+  <!-- Noscript message -->
+  <noscript>
+    <div style="padding:32px;text-align:center;font-family:sans-serif">
+      <h1 style="color:#2E7D32">NeuroFlow</h1>
+      <p>Para usar NeuroFlow, necesitas tener JavaScript habilitado en tu navegador.</p>
+    </div>
+  </noscript>
+</body>
+</html>
