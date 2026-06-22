@@ -280,15 +280,22 @@ const Relajacion = {
   // === SONIDOS ===
   toggleSound(id) {
     if (this.selectedSound === id) {
+      // Detener sonido actual
+      this.stopCurrentSound();
       this.selectedSound = null;
     } else {
+      // Detener el anterior si había uno
+      this.stopCurrentSound();
       this.selectedSound = id;
+      this.playAmbientSound(id);
     }
 
     const status = Utils.$('#sonido-status');
     if (status) {
       const sonido = AppData.sonidosAmbientales.find(s => s.id === this.selectedSound);
-      status.textContent = this.selectedSound ? `🔊 Reproduciendo: ${sonido.name} ${sonido.icon}` : '🔇 Sonido detenido';
+      status.textContent = this.selectedSound
+        ? `🔊 Reproduciendo: ${sonido.name} ${sonido.icon}`
+        : '🔇 Sonido detenido';
     }
 
     // Update UI
@@ -298,6 +305,303 @@ const Relajacion = {
       btn.style.borderColor = isSelected ? (sonido ? sonido.color : 'transparent') : 'transparent';
       btn.style.background = isSelected ? `${sonido ? sonido.color : ''}25` : `${sonido ? sonido.color : ''}15`;
     });
+  },
+
+  stopCurrentSound() {
+    if (this._soundNodes) {
+      this._soundNodes.forEach(n => {
+        try { n.stop ? n.stop() : n.disconnect(); } catch(e) {}
+      });
+      this._soundNodes = [];
+    }
+    if (this._soundGain) {
+      try { this._soundGain.disconnect(); } catch(e) {}
+      this._soundGain = null;
+    }
+    if (this._soundLFOs) {
+      this._soundLFOs.forEach(n => { try { n.stop(); } catch(e) {} });
+      this._soundLFOs = [];
+    }
+  },
+
+  getAudioContext() {
+    if (!this._audioCtx || this._audioCtx.state === 'closed') {
+      this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this._audioCtx.state === 'suspended') {
+      this._audioCtx.resume();
+    }
+    return this._audioCtx;
+  },
+
+  playAmbientSound(id) {
+    const ctx = this.getAudioContext();
+    this._soundNodes = [];
+    this._soundLFOs = [];
+
+    // Master gain con fade-in suave
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.6, ctx.currentTime + 1.5);
+    master.connect(ctx.destination);
+    this._soundGain = master;
+
+    switch(id) {
+      case 's1': this._buildRain(ctx, master); break;
+      case 's2': this._buildForest(ctx, master); break;
+      case 's3': this._buildOcean(ctx, master); break;
+      case 's4': this._buildNight(ctx, master); break;
+      case 's5': this._buildWind(ctx, master); break;
+      case 's6': this._buildFire(ctx, master); break;
+    }
+  },
+
+  // 🌧️ Lluvia: ruido blanco filtrado con variación
+  _buildRain(ctx, master) {
+    const bufferSize = ctx.sampleRate * 3;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1800;
+    filter.Q.value = 0.6;
+
+    const filter2 = ctx.createBiquadFilter();
+    filter2.type = 'highpass';
+    filter2.frequency.value = 600;
+
+    source.connect(filter);
+    filter.connect(filter2);
+    filter2.connect(master);
+    source.start();
+    this._soundNodes.push(source);
+
+    // Gotas ocasionales
+    const dropInterval = setInterval(() => {
+      if (!this._soundGain) { clearInterval(dropInterval); return; }
+      const drop = ctx.createOscillator();
+      const dropGain = ctx.createGain();
+      drop.frequency.value = 1200 + Math.random() * 800;
+      dropGain.gain.setValueAtTime(0.08, ctx.currentTime);
+      dropGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      drop.connect(dropGain);
+      dropGain.connect(master);
+      drop.start();
+      drop.stop(ctx.currentTime + 0.12);
+    }, 120 + Math.random() * 200);
+    this._soundNodes.push({ stop: () => clearInterval(dropInterval) });
+  },
+
+  // 🌲 Bosque: ruido grave + pájaros ocasionales
+  _buildForest(ctx, master) {
+    const bufferSize = ctx.sampleRate * 3;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+
+    source.connect(filter);
+    filter.connect(master);
+    source.start();
+    this._soundNodes.push(source);
+
+    // Pájaros sintéticos
+    const birdInterval = setInterval(() => {
+      if (!this._soundGain) { clearInterval(birdInterval); return; }
+      const bird = ctx.createOscillator();
+      const birdGain = ctx.createGain();
+      bird.type = 'sine';
+      const baseFreq = 1800 + Math.random() * 1200;
+      bird.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      bird.frequency.linearRampToValueAtTime(baseFreq * 1.3, ctx.currentTime + 0.1);
+      bird.frequency.linearRampToValueAtTime(baseFreq, ctx.currentTime + 0.2);
+      birdGain.gain.setValueAtTime(0, ctx.currentTime);
+      birdGain.gain.linearRampToValueAtTime(0.07, ctx.currentTime + 0.05);
+      birdGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      bird.connect(birdGain);
+      birdGain.connect(master);
+      bird.start();
+      bird.stop(ctx.currentTime + 0.3);
+    }, 1500 + Math.random() * 3000);
+    this._soundNodes.push({ stop: () => clearInterval(birdInterval) });
+  },
+
+  // 🌊 Mar: ruido con efecto de olas (LFO)
+  _buildOcean(ctx, master) {
+    const bufferSize = ctx.sampleRate * 4;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 700;
+    filter.Q.value = 0.4;
+
+    // LFO para simular olas
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 0.18; // ~1 ola cada 5s
+    lfoGain.gain.value = 0.5;
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+
+    const waveGain = ctx.createGain();
+    waveGain.gain.value = 0.9;
+
+    source.connect(filter);
+    filter.connect(waveGain);
+    waveGain.connect(master);
+    lfo.start();
+    source.start();
+    this._soundNodes.push(source);
+    this._soundLFOs.push(lfo);
+  },
+
+  // 🌙 Noche: grave + grillos
+  _buildNight(ctx, master) {
+    // Fondo suave grave
+    const bufSize = ctx.sampleRate * 3;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
+
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+
+    const filt = ctx.createBiquadFilter();
+    filt.type = 'lowpass';
+    filt.frequency.value = 180;
+
+    const lowGain = ctx.createGain();
+    lowGain.gain.value = 0.3;
+
+    src.connect(filt);
+    filt.connect(lowGain);
+    lowGain.connect(master);
+    src.start();
+    this._soundNodes.push(src);
+
+    // Grillos: pulsos repetitivos
+    let cricketT = ctx.currentTime;
+    const chirp = () => {
+      if (!this._soundGain) return;
+      for (let p = 0; p < 3; p++) {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = 4200 + Math.random() * 400;
+        const t = cricketT + p * 0.04;
+        g.gain.setValueAtTime(0.03, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+        osc.connect(g);
+        g.connect(master);
+        osc.start(t);
+        osc.stop(t + 0.04);
+      }
+      cricketT += 0.45 + Math.random() * 0.3;
+    };
+    const cricketInterval = setInterval(() => {
+      if (!this._soundGain) { clearInterval(cricketInterval); return; }
+      chirp();
+    }, 450);
+    chirp();
+    this._soundNodes.push({ stop: () => clearInterval(cricketInterval) });
+  },
+
+  // 🍃 Viento: ruido con sweep de frecuencia
+  _buildWind(ctx, master) {
+    const bufSize = ctx.sampleRate * 3;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
+
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 600;
+    filter.Q.value = 1.2;
+
+    // LFO para variación de viento
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 0.08;
+    lfoGain.gain.value = 400;
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+
+    const g = ctx.createGain();
+    g.gain.value = 0.8;
+
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(master);
+    lfo.start();
+    src.start();
+    this._soundNodes.push(src);
+    this._soundLFOs.push(lfo);
+  },
+
+  // 🔥 Fuego: ruido filtrado cálido + chisporroteos
+  _buildFire(ctx, master) {
+    const bufSize = ctx.sampleRate * 3;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
+
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 800;
+
+    const g = ctx.createGain();
+    g.gain.value = 0.6;
+
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(master);
+    src.start();
+    this._soundNodes.push(src);
+
+    // Chisporroteos aleatorios
+    const crackleInterval = setInterval(() => {
+      if (!this._soundGain) { clearInterval(crackleInterval); return; }
+      const crackleBuf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+      const cd = crackleBuf.getChannelData(0);
+      for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * (1 - i / cd.length);
+      const crackSrc = ctx.createBufferSource();
+      crackSrc.buffer = crackleBuf;
+      const crackGain = ctx.createGain();
+      crackGain.gain.value = 0.2 + Math.random() * 0.3;
+      crackSrc.connect(crackGain);
+      crackGain.connect(master);
+      crackSrc.start();
+    }, 300 + Math.random() * 700);
+    this._soundNodes.push({ stop: () => clearInterval(crackleInterval) });
   },
 
   // === REGISTRO EMOCIONAL ===

@@ -50,6 +50,7 @@ const Especialistas = {
 
   init() {
     this.bindEvents();
+    this.bindCardEvents();
   },
 
   bindEvents() {

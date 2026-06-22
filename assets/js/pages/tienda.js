@@ -187,8 +187,23 @@ const Tienda = {
       const inCart = carrito.find(c => c.id === p.id);
       return `
         <div class="card product-card" style="padding:0;overflow:hidden">
-          <div style="height:180px;background:linear-gradient(135deg, #E8F5E9, #C8E6C9);display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative">
-            ${p.emoji}
+          <div class="product-img-wrapper" style="height:180px;position:relative;overflow:hidden;background:#F0FDF4">
+            ${p.image ? `
+              <img
+                src="${p.image}"
+                alt="${Utils.escapeHtml(p.name)}"
+                loading="lazy"
+                style="width:100%;height:100%;object-fit:cover;display:block"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+              >
+              <div style="display:none;height:100%;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,#E8F5E9,#C8E6C9)">
+                ${p.emoji}
+              </div>
+            ` : `
+              <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,#E8F5E9,#C8E6C9)">
+                ${p.emoji}
+              </div>
+            `}
             <button class="product-favorite ${isFav ? 'active' : ''}" data-id="${p.id}" aria-label="${isFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}">
               ${isFav ? '❤️' : '🤍'}
             </button>
@@ -200,8 +215,8 @@ const Tienda = {
               ${'★'.repeat(Math.floor(p.rating))} <span style="color:var(--text-muted)">(${p.reviews})</span>
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <span class="product-price">$${p.price.toFixed(2)}</span>
-              ${p.originalPrice ? `<span style="color:var(--text-muted);font-size:0.85rem;text-decoration:line-through">$${p.originalPrice.toFixed(2)}</span>` : ''}
+              <span class="product-price">S/ ${p.price.toFixed(2)}</span>
+              ${p.originalPrice ? `<span style="color:var(--text-muted);font-size:0.85rem;text-decoration:line-through">S/ ${p.originalPrice.toFixed(2)}</span>` : ''}
             </div>
             <div style="display:flex;gap:8px">
               ${inCart ? `
@@ -230,8 +245,11 @@ const Tienda = {
       size: 'lg',
       content: `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
-          <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-radius:16px;height:250px;display:flex;align-items:center;justify-content:center;font-size:6rem">
-            ${prod.emoji}
+          <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-radius:16px;height:250px;display:flex;align-items:center;justify-content:center;font-size:6rem;overflow:hidden">
+            ${prod.image ? `
+              <img src="${prod.image}" alt="${Utils.escapeHtml(prod.name)}" style="width:100%;height:100%;object-fit:cover;border-radius:16px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+              <span style="display:none;font-size:6rem">${prod.emoji}</span>
+            ` : prod.emoji}
           </div>
           <div>
             <span class="badge badge-blue" style="margin-bottom:8px">${prod.categoryLabel}</span>
@@ -240,8 +258,8 @@ const Tienda = {
               ${'★'.repeat(Math.floor(prod.rating))} ${prod.rating} (${prod.reviews} reseñas)
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <span class="product-price" style="font-size:1.5rem">$${prod.price.toFixed(2)}</span>
-              ${prod.originalPrice ? `<span style="color:var(--text-muted);font-size:1rem;text-decoration:line-through">$${prod.originalPrice.toFixed(2)}</span>` : ''}
+              <span class="product-price" style="font-size:1.5rem">S/ ${prod.price.toFixed(2)}</span>
+              ${prod.originalPrice ? `<span style="color:var(--text-muted);font-size:1rem;text-decoration:line-through">S/ ${prod.originalPrice.toFixed(2)}</span>` : ''}
             </div>
             <p style="color:var(--text-secondary);line-height:1.7;margin-bottom:16px">${prod.description}</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -297,7 +315,7 @@ const Tienda = {
               <span style="font-size:2rem">${item.emoji}</span>
               <div style="flex:1;min-width:0">
                 <div style="font-weight:500;color:var(--text-primary)">${Utils.escapeHtml(item.name)}</div>
-                <div style="color:var(--heading-color-alt);font-weight:600">$${(item.price * (item.cantidad || 1)).toFixed(2)}</div>
+                <div style="color:var(--heading-color-alt);font-weight:600">S/ ${(item.price * (item.cantidad || 1)).toFixed(2)}</div>
               </div>
               <div style="display:flex;align-items:center;gap:8px">
                 <button class="btn btn-sm btn-ghost btn-carrito-cantidad" data-id="${item.id}" data-accion="menos" style="font-weight:700;font-size:1.1rem">−</button>
@@ -311,7 +329,7 @@ const Tienda = {
         <div style="border-top:2px solid #E8F5E9;padding-top:16px">
           <div style="display:flex;justify-content:space-between;font-size:1.2rem;font-weight:700;color:var(--heading-color-alt);margin-bottom:16px">
             <span>Total:</span>
-            <span>$${total.toFixed(2)}</span>
+            <span>S/ ${total.toFixed(2)}</span>
           </div>
           <button class="btn btn-primary btn-lg btn-full" id="btn-finalizar-compra">🛍️ Pedir por WhatsApp</button>
         </div>
@@ -348,13 +366,13 @@ const Tienda = {
             const qtySpan = row.querySelector('span:nth-child(3)');
             if (qtySpan) qtySpan.textContent = item.cantidad;
             const priceSpan = row.querySelector('div:nth-child(2) > div:nth-child(2)');
-            if (priceSpan) priceSpan.textContent = `$${(item.price * item.cantidad).toFixed(2)}`;
+            if (priceSpan) priceSpan.textContent = `S/ ${(item.price * item.cantidad).toFixed(2)}`;
           }
           // Actualizar total
           const totalSpan = document.querySelector('#carrito-modal-container [style*="font-size:1.2rem"] span:last-child');
           if (totalSpan) {
             const newTotal = Storage.getArray('carrito').reduce((s, i) => s + (i.cantidad || 1) * i.price, 0);
-            totalSpan.textContent = `$${newTotal.toFixed(2)}`;
+            totalSpan.textContent = `S/ ${newTotal.toFixed(2)}`;
           }
         });
       });
@@ -377,9 +395,9 @@ const Tienda = {
         if (carrito.length === 0) return;
 
         const total = carrito.reduce((s, i) => s + (i.cantidad || 1) * i.price, 0);
-        const items = carrito.map(i => `• ${i.emoji} ${i.name} x${i.cantidad || 1} = $${((i.cantidad || 1) * i.price).toFixed(2)}`).join('\n');
+        const items = carrito.map(i => `• ${i.emoji} ${i.name} x${i.cantidad || 1} = S/ ${((i.cantidad || 1) * i.price).toFixed(2)}`).join('\n');
         const mensaje = encodeURIComponent(
-          `Hola, quiero realizar el siguiente pedido:\n\n${items}\n\nTotal: $${total.toFixed(2)}\n\n¡Gracias!`
+          `Hola, quiero realizar el siguiente pedido:\n\n${items}\n\nTotal: S/ ${total.toFixed(2)}\n\n¡Gracias!`
         );
 
         if (this.whatsappNumber) {

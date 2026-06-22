@@ -48,6 +48,7 @@ const Recursos = {
 
   init() {
     this.bindEvents();
+    this.bindCardEvents();
   },
 
   bindEvents() {

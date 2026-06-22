@@ -46,14 +46,14 @@
   --gray-800: #1E293B;
   --gray-900: #0F172A;
 
-  /* Fondos — blanco roto con micro-tinte verde */
-  --bg-main: #F7F9F7;
+  /* Fondos — blancos puros */
+  --bg-main: #FFFFFF;
   --bg-surface: #FFFFFF;
-  --bg-surface-2: #F0FDF4;
+  --bg-surface-2: #F8FAFC;
 
-  /* Texto — Slate, más suave que negro puro */
-  --text-primary: #334155;
-  --text-secondary: #64748B;
+  /* Texto — más nítido sobre fondo blanco */
+  --text-primary: #1E293B;
+  --text-secondary: #475569;
   --text-muted: #94A3B8;
   --heading-color: #0F172A;
   --heading-color-alt: #0F172A;
@@ -112,8 +112,8 @@
 
   /* Navbar */
   --navbar-bg: #FFFFFF;
-  --navbar-shadow: 0 1px 2px rgba(0,0,0,0.06);
-  --navbar-link-color: #475569;
+  --navbar-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --navbar-link-color: #334155;
   --navbar-link-hover: #059669;
   --navbar-link-active-bg: #ECFDF5;
 }
@@ -373,8 +373,7 @@ html {
 body {
   font-family: var(--font-body);
   background-color: var(--bg-main);
-  /* Gradiente sutil de fondo — casi imperceptible pero da profundidad */
-  background-image: linear-gradient(160deg, #F0FDF8 0%, #F7F9F7 45%, #EFF6FF 100%);
+  background-image: none;
   background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
@@ -512,6 +511,16 @@ img {
 .navbar-logo:hover {
   opacity: 0.85;
   color: var(--primary-600);
+}
+
+/* Texto del logo: negro en claro, blanco en oscuro */
+.navbar-logo-text {
+  color: #0F172A;
+  transition: color var(--transition-fast);
+}
+
+html.dark .navbar-logo-text {
+  color: #F1F5F9;
 }
 
 .navbar-logo svg,
@@ -1227,12 +1236,12 @@ img {
 
 /* Banner informativo */
 .info-banner {
-  background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+  background: #FFFFFF;
   border-radius: 16px;
   padding: 16px 24px;
   margin-bottom: 32px;
   border-left: 4px solid var(--primary-500);
-  border: 1px solid rgba(16,185,129,0.15);
+  border: 1px solid rgba(16,185,129,0.2);
   border-left: 4px solid var(--primary-500);
   box-shadow: 0 2px 8px rgba(16,185,129,0.06);
 }
@@ -2091,5 +2100,120 @@ img {
   }
   .main-content {
     padding-top: 0;
+  }
+}
+
+/* === FONDO GLOBAL: TODAS LAS SECCIONES === */
+
+body.page-inicio,
+body.page-calendario,
+body.page-recordatorios,
+body.page-tecnicas,
+body.page-recursos,
+body.page-relajacion,
+body.page-especialistas,
+body.page-metas,
+body.page-tienda {
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.82) 0%,
+      rgba(255, 255, 255, 0.78) 40%,
+      rgba(255, 255, 255, 0.82) 100%
+    ),
+    url('../images/inicio/fondo.png');
+  background-size: auto, cover;
+  background-position: center, center;
+  background-attachment: fixed, fixed;
+  background-repeat: no-repeat, no-repeat;
+}
+
+/* Dark mode */
+html.dark body.page-inicio,
+html.dark body.page-calendario,
+html.dark body.page-recordatorios,
+html.dark body.page-tecnicas,
+html.dark body.page-recursos,
+html.dark body.page-relajacion,
+html.dark body.page-especialistas,
+html.dark body.page-metas,
+html.dark body.page-tienda {
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(17, 24, 39, 0.88) 0%,
+      rgba(17, 24, 39, 0.84) 40%,
+      rgba(17, 24, 39, 0.88) 100%
+    ),
+    url('../images/inicio/fondo.png');
+}
+
+/* Móviles: scroll normal + overlay más transparente */
+@media (max-width: 768px) {
+  body.page-inicio,
+  body.page-calendario,
+  body.page-recordatorios,
+  body.page-tecnicas,
+  body.page-recursos,
+  body.page-relajacion,
+  body.page-especialistas,
+  body.page-metas,
+  body.page-tienda {
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.55) 0%,
+        rgba(255, 255, 255, 0.50) 40%,
+        rgba(255, 255, 255, 0.55) 100%
+      ),
+      url('../images/inicio/fondo.png');
+    background-attachment: scroll, scroll;
+    background-size: auto, cover;
+    background-position: center, center;
+  }
+  html.dark body.page-inicio,
+  html.dark body.page-calendario,
+  html.dark body.page-recordatorios,
+  html.dark body.page-tecnicas,
+  html.dark body.page-recursos,
+  html.dark body.page-relajacion,
+  html.dark body.page-especialistas,
+  html.dark body.page-metas,
+  html.dark body.page-tienda {
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgba(17, 24, 39, 0.65) 0%,
+        rgba(17, 24, 39, 0.60) 40%,
+        rgba(17, 24, 39, 0.65) 100%
+      ),
+      url('../images/inicio/fondo.png');
+    background-attachment: scroll, scroll;
+  }
+}
+
+/* Reducción de movimiento: sin parallax */
+@media (prefers-reduced-motion: reduce) {
+  body.page-inicio,
+  body.page-calendario,
+  body.page-recordatorios,
+  body.page-tecnicas,
+  body.page-recursos,
+  body.page-relajacion,
+  body.page-especialistas,
+  body.page-metas,
+  body.page-tienda {
+    background-attachment: scroll, scroll;
+  }
+  html.dark body.page-inicio,
+  html.dark body.page-calendario,
+  html.dark body.page-recordatorios,
+  html.dark body.page-tecnicas,
+  html.dark body.page-recursos,
+  html.dark body.page-relajacion,
+  html.dark body.page-especialistas,
+  html.dark body.page-metas,
+  html.dark body.page-tienda {
+    background-attachment: scroll, scroll;
   }
 }
